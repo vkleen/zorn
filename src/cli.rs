@@ -1,4 +1,5 @@
 use anyhow::Result;
+use tracing::metadata::LevelFilter;
 
 const BINNAME: &str = clap::crate_name!();
 
@@ -24,12 +25,27 @@ command_builder::build_commands!(
             Ok(())
         }
     },
+    encrypt
 );
 
 pub(crate) fn run() -> Result<()> {
     let cli = <Cli as clap::Parser>::parse();
 
+    init_tracing(&cli);
     dispatch_cmd(cli.cmd)
+}
+
+fn init_tracing(_: &Cli) {
+    use tracing_subscriber::prelude::*;
+    use tracing_subscriber::{fmt, EnvFilter, registry};
+
+    registry()
+        .with(fmt::layer().pretty())
+        .with(EnvFilter::builder()
+            .with_regex(false)
+            .with_default_directive(LevelFilter::ERROR.into())
+            .from_env_lossy())
+        .init();
 }
 
 fn gen_completions(shell: impl clap_complete::Generator) {
@@ -67,7 +83,7 @@ mod command_builder {
                     match a {
                         $($manual_dispatch)*
                         $(
-                            $name::[<$cmd:camel>](a) => $cmd::run(a).await,
+                            $name::[<$cmd:camel>](a) => a.run(),
                         )*
                     }
                 }

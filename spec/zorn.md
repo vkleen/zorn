@@ -6,15 +6,10 @@ decryption  with strong sender authentication.
 It is philosophically based on [age](age-encryption.org/v1) but not
 interoperable by design. The goal of `zorn` is to allow a UNIX style pipeline
 ```
-cat message.zorn | zorn --from <sender-identity> --decrypt | consumer
+cat message.zorn | zorn decrypt --from <sender-identity> | consumer
 ```
 to proceed in constant memory while never outputting data to `consumer` which
-is not cryptographically tied to `<sender-identity>`. Further, a pipeline
-```
-zorn --from <sender-identity> --decrypt message.zorn | consumer
-```
-should be able to proceed in constant memory and ensure that `message.zorn` has
-not been truncated before outputting data to `consumer`.
+is not cryptographically tied to `<sender-identity>`.
 
 ## Conventions
 
