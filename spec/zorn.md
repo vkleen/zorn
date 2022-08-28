@@ -186,7 +186,7 @@ Future version may change anything following the version line.
 #### Shared Secret
 
 The sender chooses an ephemeral identity and computes a shared secret with
-recipient as follows. The `ephemeral secret` MUST be drawn from high entropy
+the recipient as follows. The `ephemeral secret` MUST be drawn from a high entropy
 source and MUST NOT be reused across files.
 
 ```
@@ -200,13 +200,13 @@ shared secret = BLAKE3-derive_key("zorn-encryption.org/v1 shared secret",
 ```
 
 The recipient, possessing the secret key `recipient secret` corresponding to
-its recipient identity, computes `shared secret` after receiving `ephemeral
+its `recipient identity`, computes `shared secret` after receiving `ephemeral
 identity` as follows.
 
 ```
 dh1 = X25519(recipient secret, sender identity)
 dh2 = X25519(recipient secret, ephemeral identity)
-shared secret = BLAKE3-derive_key("zorn-encryption/v1 shared secret",
+shared secret = BLAKE3-derive_key("zorn-encryption.org/v1 shared secret",
   dh1 || dh2 || ephemeral identity || sender identity || recipient identity)
 ```
 
