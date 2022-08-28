@@ -261,11 +261,6 @@ P_(N-1) = XChaCha20-BLAKE3-decrypt(
   ciphertext = C_(N-1))
 ```
 
-If the receiver is presented with a seekable payload, for instance as an
-encrypted file, she MUST verify that all ciphertext chunks decrypt correctly
-before outputting any data.
-
-
 [BIP 0173]: https://github.com/bitcoin/bips/blob/master/bip-0173.mediawiki
 [BCP 14]: https://www.rfc-editor.org/info/bcp14
 [RFC 2119]: https://www.rfc-editor.org/rfc/rfc2119.html
