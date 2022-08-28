@@ -36,7 +36,7 @@ impl ZornIdentity {
     }
 }
 
-#[derive(Error, Debug)]
+#[derive(Error, Debug, PartialEq, Eq)]
 pub enum ZornIdentityDecodeError {
     #[error("incorrect byte length {0} for a public key")]
     IncorrectPubKeyLength(usize),
@@ -101,7 +101,7 @@ mod tests {
     use hex_literal::hex;
     use x25519_dalek::StaticSecret;
 
-    use crate::identity::{ZornIdentity, ZornIdentitySecret};
+    use crate::identity::{ZornIdentity, ZornIdentitySecret, ZornIdentityDecodeError};
 
     use proptest::{proptest, prelude::any};
 
@@ -112,14 +112,38 @@ mod tests {
     fn zorn_identity_bech32m_test_vector() {
         let sk = ZornIdentitySecret(StaticSecret::from(TEST_SK));
         assert_eq!(ZornIdentity::from(&sk).to_string(), TEST_ID);
-        assert_eq!(ZornIdentity::from(&sk), ZornIdentity::from_str(TEST_ID).expect("TEST_ID is valid"));
+        assert_eq!(ZornIdentity::from(&sk), ZornIdentity::from_str(TEST_ID).expect("TEST_ID should be valid, but"));
+    }
+
+    #[test]
+    fn zorn_identity_bech32m_invalid_hrp() {
+        assert_eq!(ZornIdentity::from_str("bc-1gjfs6r7x5fmydhgrz9cnwrdkdnnvt3w7zhwya6dwvrp528qjmd3sfq5gmj"),
+            Err(ZornIdentityDecodeError::IncorrectHRP));
+    }
+
+    #[test]
+    fn zorn_identity_bech32m_incorrect_length()  {
+        assert_eq!(ZornIdentity::from_str("zornv1-1gjfs6r7x5fmydhgrz9cnwrdkdnnvt3w7zhwya6dwvrp528qjar2ezq"),
+            Err(ZornIdentityDecodeError::IncorrectPubKeyLength(30)));
+    }
+
+    #[test]
+    fn zorn_identity_bech32m_incorrect_variant() {
+        assert_eq!(ZornIdentity::from_str("zornv1-1gjfs6r7x5fmydhgrz9cnwrdkdnnvt3w7zhwya6dwvrp528qj40xsyrjc7g"),
+            Err(ZornIdentityDecodeError::IncorrectBech32Variant))
+    }
+
+    #[test]
+    fn zorn_identity_bech32m_checksum() {
+        assert_eq!(ZornIdentity::from_str("zornv1-1gjfs6r7x5fmydhgrz9cnwrdkdnnvt3w7zhwya6dwvrp538qjmd3s04fc4w"),
+            Err(ZornIdentityDecodeError::InvalidBech32mEncoding(bech32::Error::InvalidChecksum)));
     }
 
     proptest! {
         #[test]
         fn zorn_identity_bech32m_roundtrip(sk in any::<ZornIdentitySecret>()) {
             let id = ZornIdentity::from(&sk);
-            assert_eq!(id, ZornIdentity::from_str(id.to_string().as_str()).expect("Encoding should be valid"));
+            assert_eq!(id, ZornIdentity::from_str(id.to_string().as_str()).expect("Encoding should be valid, but"));
         }
     }
 }
