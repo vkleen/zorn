@@ -150,8 +150,8 @@ where the function `X25519` is specified in [RFC 7748][], Section 5, and
 `basepoint` denotes the Curve25519 base point specified in [RFC 7748][],
 Section 4.1.
 
-An identity is encoded as Bech32 as specified in [BIP 0173][] with human
-readable prefix `zornv1`.
+An identity is encoded as Bech32m as specified in [BIP 0350][] with human
+readable prefix `zornv1-`.
 
 Identities and associated secret keys MUST NOT be reused across different
 versions of the zorn encryption format or shared with different encryption
@@ -261,7 +261,7 @@ P_(N-1) = XChaCha20-BLAKE3-decrypt(
   ciphertext = C_(N-1))
 ```
 
-[BIP 0173]: https://github.com/bitcoin/bips/blob/master/bip-0173.mediawiki
+[BIP 0173]: https://github.com/bitcoin/bips/blob/master/bip-0350.mediawiki
 [BCP 14]: https://www.rfc-editor.org/info/bcp14
 [RFC 2119]: https://www.rfc-editor.org/rfc/rfc2119.html
 [RFC 8174]: https://www.rfc-editor.org/rfc/rfc8174.html
