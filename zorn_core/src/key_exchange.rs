@@ -8,7 +8,7 @@ use crate::identity::{ZornIdentity, ZornIdentitySecret};
 #[zeroize(drop)]
 pub struct SharedSecret([u8; 32]);
 
-const KEY_EXCHANGE_CONTEXT : &str = "zorn-encryption.org/v1 shared secret";
+const KEY_EXCHANGE_CONTEXT: &str = "zorn-encryption.org/v1 shared secret";
 
 fn generate_ephemeral_identity() -> (EphemeralSecret, PublicKey) {
     let s = EphemeralSecret::new(OsRng);
@@ -28,22 +28,25 @@ fn compute_sender_shared_secret(sender_secret: &ZornIdentitySecret, ephemeral_se
     SharedSecret(hasher.finalize().into())
 }
 
-pub fn sender_exchange(sender_secret: &ZornIdentitySecret, recipient_identity: &ZornIdentity) -> (PublicKey, SharedSecret) {
-    let (ephemeral_secret, ephemeral_identity) = generate_ephemeral_identity();
-    (ephemeral_identity, compute_sender_shared_secret(sender_secret, ephemeral_secret, &ephemeral_identity, recipient_identity))
+impl SharedSecret {
+    pub fn sender(sender_secret: &ZornIdentitySecret, recipient_identity: &ZornIdentity) -> (PublicKey, Self) {
+        let (ephemeral_secret, ephemeral_identity) = generate_ephemeral_identity();
+        (ephemeral_identity, compute_sender_shared_secret(sender_secret, ephemeral_secret, &ephemeral_identity, recipient_identity))
+    }
+
+    pub fn recipient(recipient_secret: &ZornIdentitySecret, sender_identity: &ZornIdentity, ephemeral_identity: &PublicKey) -> Self {
+        let mut hasher = blake3::Hasher::new_derive_key(KEY_EXCHANGE_CONTEXT);
+    
+        hasher.update(recipient_secret.diffie_hellman(sender_identity).as_bytes());
+        hasher.update(recipient_secret.diffie_hellman(ephemeral_identity).as_bytes());
+        hasher.update(ephemeral_identity.as_bytes());
+        hasher.update(sender_identity.as_bytes());
+        hasher.update(ZornIdentity::from(recipient_secret).as_bytes());
+    
+        SharedSecret(hasher.finalize().into())
+    }
 }
 
-pub fn recipient_exchange(recipient_secret: &ZornIdentitySecret, sender_identity: &ZornIdentity, ephemeral_identity: &PublicKey) -> SharedSecret {
-    let mut hasher = blake3::Hasher::new_derive_key(KEY_EXCHANGE_CONTEXT);
-
-    hasher.update(recipient_secret.diffie_hellman(sender_identity).as_bytes());
-    hasher.update(recipient_secret.diffie_hellman(ephemeral_identity).as_bytes());
-    hasher.update(ephemeral_identity.as_bytes());
-    hasher.update(sender_identity.as_bytes());
-    hasher.update(ZornIdentity::from(recipient_secret).as_bytes());
-
-    SharedSecret(hasher.finalize().into())
-}
 
 #[cfg(test)]
 mod tests {
@@ -51,7 +54,7 @@ mod tests {
     use rand_core::{RngCore, CryptoRng, impls, OsRng};
     use x25519_dalek::{EphemeralSecret, PublicKey};
 
-    use super::{compute_sender_shared_secret, sender_exchange, recipient_exchange};
+    use super::{SharedSecret, compute_sender_shared_secret};
 
     struct DummyRng(u64);
     impl RngCore for DummyRng {
@@ -89,8 +92,8 @@ mod tests {
         let sender_secret = ZornIdentitySecret::new(OsRng);
         let recipient_secret = ZornIdentitySecret::new(OsRng);
 
-        let (pk, sender_shared) = sender_exchange(&sender_secret, &ZornIdentity::from(&recipient_secret));
-        let recipient_shared = recipient_exchange(&recipient_secret, &ZornIdentity::from(&sender_secret), &pk);
+        let (pk, sender_shared) = SharedSecret::sender(&sender_secret, &ZornIdentity::from(&recipient_secret));
+        let recipient_shared = SharedSecret::recipient(&recipient_secret, &ZornIdentity::from(&sender_secret), &pk);
         assert_eq!(sender_shared.0, recipient_shared.0);
     }
 }

@@ -105,8 +105,8 @@ requirements. The output length will be the plaintext length plus an additional
 
 The encryption proceeds as follows.
 ```
-encryption-key = BLAKE3-key_derive("zorn-encryption.org/v1 XChaCha20-BLAKE3 encryption key", key || nonce)
-mac-key = BLAKE3-key_derive("zorn-encryption.org/v1 XChaCha20-BLAKE3 MAC key", key || nonce)
+encryption-key = BLAKE3-key_derive("zorn-encryption.org/v1 XChaCha20-BLAKE3 encryption key", key)
+mac-key = BLAKE3-key_derive("zorn-encryption.org/v1 XChaCha20-BLAKE3 MAC key", key)
 
 ciphertext = XChaCha20-encrypt(encryption-key, nonce, plaintext)
 tag = BLAKE3-keyed_hash(mac-key,
@@ -120,8 +120,8 @@ The decryption  proceeds as follows.
 tag = ciphertext[ciphertext.Length-32..]
 ciphertextNoTag = ciphertext[0..ciphertext.Length-32]
 
-encryption-key = BLAKE3-key_derive("zorn-encryption.org/v1 XChaCha20-BLAKE3 encryption key", key || nonce)
-mac-key = BLAKE3-key_derive("zorn-encryption.org/v1 XChaCha20-BLAKE3 MAC key", key || nonce)
+encryption-key = BLAKE3-key_derive("zorn-encryption.org/v1 XChaCha20-BLAKE3 encryption key", key)
+mac-key = BLAKE3-key_derive("zorn-encryption.org/v1 XChaCha20-BLAKE3 MAC key", key)
 
 computed-tag = BLAKE3-keyed_hash(mac-key,
   key || nonce || AD || ciphertext || LE64(AD.Length) || LE64(ciphertext.Length))

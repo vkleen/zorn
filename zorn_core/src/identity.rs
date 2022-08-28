@@ -2,7 +2,9 @@ use std::ops::{Deref, DerefMut};
 use rand_core::{RngCore, CryptoRng};
 use zeroize::Zeroize;
 
-use x25519_dalek::{PublicKey, StaticSecret};
+use x25519_dalek::{PublicKey, StaticSecret, SharedSecret};
+
+//const ZORN_SECRET_APPLICATION_CONTEXT: &str = "zorn-encryption.org/cli 2022-08-28T15:31:50+00:00 ZornIdentitySecret key derivation";
 
 #[derive(Debug)]
 pub struct ZornIdentity(pub(crate) PublicKey);
@@ -25,29 +27,18 @@ impl DerefMut for ZornIdentity {
 #[zeroize(drop)]
 pub struct ZornIdentitySecret(StaticSecret);
 
-impl Deref for ZornIdentitySecret {
-    type Target = StaticSecret;
-
-    fn deref(&self) -> &Self::Target {
-        &self.0
-    }
-}
-
-
 impl From<&ZornIdentitySecret> for ZornIdentity {
     fn from(secret: &ZornIdentitySecret) -> Self {
         ZornIdentity(PublicKey::from(&secret.0))
     }
 }
 
-impl From<[u8;32]> for ZornIdentitySecret {
-    fn from(bytes: [u8;32]) -> Self {
-        ZornIdentitySecret(StaticSecret::from(bytes))
-    }
-}
-
 impl ZornIdentitySecret {
     pub fn new<T: RngCore + CryptoRng>(csprng: T) -> ZornIdentitySecret {
         ZornIdentitySecret(StaticSecret::new(csprng))
+    }
+
+    pub fn diffie_hellman(&self, their_id: &PublicKey) -> SharedSecret {
+        self.0.diffie_hellman(their_id)
     }
 }
