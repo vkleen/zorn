@@ -1,4 +1,4 @@
-use aead::{AeadCore, consts::{U24, U32, U0}, AeadMutInPlace, generic_array::GenericArray, Nonce, Error, KeyInit, KeySizeUser};
+use aead::{AeadCore, consts::{U24, U32, U0}, AeadInPlace, generic_array::GenericArray, Nonce, Error, KeyInit, KeySizeUser};
 use blake3::Hasher;
 use chacha20::XChaCha20;
 use cipher::{Key, KeyIvInit, StreamCipher};
@@ -56,16 +56,16 @@ impl KeyInit for XChaCha20Blake3 {
     }
 }
 
-impl AeadMutInPlace for XChaCha20Blake3 {
+impl AeadInPlace for XChaCha20Blake3 {
     fn encrypt_in_place_detached(
-        &mut self,
+        &self,
         nonce: &Nonce<Self>,
         associated_data: &[u8],
         buffer: &mut [u8],
     ) -> aead::Result<aead::Tag<Self>> {
         XChaCha20::new(&self.cipher_key, &nonce).try_apply_keystream(buffer).map_err(|_| Error)?;
 
-        let mac = &mut self.mac;
+        let mut mac = self.mac.clone();
         mac.update(nonce);
         mac.update(associated_data);
         mac.update(buffer);
@@ -76,13 +76,13 @@ impl AeadMutInPlace for XChaCha20Blake3 {
     }
 
     fn decrypt_in_place_detached(
-        &mut self,
+        &self,
         nonce: &Nonce<Self>,
         associated_data: &[u8],
         buffer: &mut [u8],
         tag: &aead::Tag<Self>,
     ) -> aead::Result<()> {
-        let mac = &mut self.mac;
+        let mut mac = self.mac.clone();
         mac.update(nonce);
         mac.update(associated_data);
         mac.update(buffer);
@@ -100,7 +100,7 @@ impl AeadMutInPlace for XChaCha20Blake3 {
 
 #[cfg(test)]
 mod test {
-    use aead::{KeyInit, AeadMutInPlace, Nonce};
+    use aead::{KeyInit, AeadInPlace, Nonce};
     use rand_core::{OsRng, RngCore};
     use std::assert_matches::assert_matches;
 
@@ -114,12 +114,12 @@ mod test {
 
         let message = Vec::from("Hello, world!");
         let mut encrypted_message = message.clone();
-        let tag = cipher.clone().encrypt_in_place_detached(
+        let tag = cipher.encrypt_in_place_detached(
             &Nonce::<XChaCha20Blake3>::from(nonce),
             b"Look ma, I'm associated!",
             encrypted_message.as_mut_slice()).expect("Impossibru");
 
-        assert_matches!(cipher.clone().decrypt_in_place_detached(
+        assert_matches!(cipher.decrypt_in_place_detached(
             &Nonce::<XChaCha20Blake3>::from(nonce),
             b"Look ma, I'm associated!",
             encrypted_message.as_mut_slice(),
@@ -136,12 +136,12 @@ mod test {
 
         let message = Vec::from("Hello, world!");
         let mut encrypted_message = message.clone();
-        let tag = cipher.clone().encrypt_in_place_detached(
+        let tag = cipher.encrypt_in_place_detached(
             &Nonce::<XChaCha20Blake3>::from(nonce),
             b"Look ma, I'm associated!",
             encrypted_message.as_mut_slice()).expect("Impossibru");
 
-        assert_matches!(cipher.clone().decrypt_in_place_detached(
+        assert_matches!(cipher.decrypt_in_place_detached(
             &Nonce::<XChaCha20Blake3>::from(nonce),
             b"Look ma, I'm not associated!",
             encrypted_message.as_mut_slice(),
@@ -157,12 +157,12 @@ mod test {
 
         let message = Vec::from("Hello, world!");
         let mut encrypted_message = message.clone();
-        let tag = cipher.clone().encrypt_in_place_detached(
+        let tag = cipher.encrypt_in_place_detached(
             &Nonce::<XChaCha20Blake3>::from(nonce),
             b"Look ma, I'm associated!",
             encrypted_message.as_mut_slice()).expect("Impossibru");
 
-        assert_matches!(cipher.clone().decrypt_in_place_detached(
+        assert_matches!(cipher.decrypt_in_place_detached(
             &Nonce::<XChaCha20Blake3>::from([0; 24]),
             b"Look ma, I'm associated!",
             encrypted_message.as_mut_slice(),
