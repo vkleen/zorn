@@ -100,32 +100,37 @@ impl AeadInPlace for XChaCha20Blake3 {
 
 #[cfg(test)]
 mod test {
-    use aead::{KeyInit, AeadInPlace, Nonce};
+    use aead::{KeyInit, AeadInPlace, Nonce, generic_array::GenericArray};
     use rand_core::{OsRng, RngCore};
     use std::assert_matches::assert_matches;
 
     use super::XChaCha20Blake3;
 
-    #[test]
-    fn roundtrip() {
-        let cipher = XChaCha20Blake3::new(&XChaCha20Blake3::generate_key(OsRng));
-        let mut nonce: [u8; _] = [0; 24];
-        OsRng.fill_bytes(nonce.as_mut_slice());
+    use proptest::{proptest, prelude::any, collection::vec};
 
-        let message = Vec::from("Hello, world!");
-        let mut encrypted_message = message.clone();
-        let tag = cipher.encrypt_in_place_detached(
-            &Nonce::<XChaCha20Blake3>::from(nonce),
-            b"Look ma, I'm associated!",
-            encrypted_message.as_mut_slice()).expect("Impossibru");
+    proptest! {
+        #[test]
+        fn roundtrip(
+                sk in any::<[u8; 32]>(),
+                nonce in any::<[u8; 24]>(),
+                msg in vec(any::<u8>(), 0..=512),
+                ad in vec(any::<u8>(), 0..=512)) {
+            let cipher = XChaCha20Blake3::new(&GenericArray::clone_from_slice(&sk));
 
-        assert_matches!(cipher.decrypt_in_place_detached(
-            &Nonce::<XChaCha20Blake3>::from(nonce),
-            b"Look ma, I'm associated!",
-            encrypted_message.as_mut_slice(),
-            &tag
-        ), Ok(()));
-        assert_eq!(message, encrypted_message);
+            let mut encrypted_message = msg.clone();
+            let tag = cipher.encrypt_in_place_detached(
+                &Nonce::<XChaCha20Blake3>::from(nonce),
+                ad.as_slice(),
+                encrypted_message.as_mut_slice()).expect("Impossibru");
+
+            assert_matches!(cipher.decrypt_in_place_detached(
+                &Nonce::<XChaCha20Blake3>::from(nonce),
+                ad.as_slice(),
+                encrypted_message.as_mut_slice(),
+                &tag
+            ), Ok(()));
+            assert_eq!(msg, encrypted_message);
+        }
     }
 
     #[test]
