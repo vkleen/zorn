@@ -34,6 +34,19 @@
       } // args);
 
       zorn = workspacePackage "zorn" { };
+
+      llvm-config-hack = let
+        llvm-paths = pkgs.symlinkJoin {
+          name = "llvm-config-hack-path";
+          paths = [ pkgs.llvm.dev pkgs.llvm.out pkgs.clang pkgs.lld ];
+        };
+      in pkgs.writeShellScriptBin "llvm-config" ''
+        if [[ "$1" == "--bindir" ]]; then
+          echo ${llvm-paths}/bin
+        else
+          ${pkgs.llvm.dev}/bin/llvm-config "$*"
+        fi
+      '';
     in {
       defaultPackage = zorn;
 
@@ -49,7 +62,13 @@
           ])
           cargo-asm cargo-expand
           fenix.rust-analyzer
+          llvm clang lld
+          python3
         ];
+        shellHook = ''
+          unset CC
+          export LLVM_CONFIG=${llvm-config-hack}/bin/llvm-config
+        '';
       };
 
       packages = {
