@@ -5,6 +5,5 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-zorn = { path = ".." }
-zorn_core = {path = "../zorn_core" }
+zorn-core = {path = "../zorn_core" }
 afl = "0.12"

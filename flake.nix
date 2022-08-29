@@ -8,8 +8,12 @@
       inputs.nixpkgs.follows=  "nixpkgs";
     };
     naersk = {
-      url = github:nmattia/naersk;
+      url = github:nix-community/naersk;
       inputs.nixpkgs.follows = "nixpkgs";
+    };
+    afl = {
+      url = git+https://github.com/vkleen/afl.rs?submodules=1;
+      flake = false;
     };
   };
 
@@ -34,6 +38,17 @@
       } // args);
 
       zorn = workspacePackage "zorn" { };
+
+      cargo-afl = naersk-lib.buildPackage {
+        pname = "afl";
+        src = inputs.afl;
+        RUSTFLAGS = "--cfg docsrs";
+        buildInputs = [ pkgs.makeWrapper ];
+        postInstall = ''
+          cp -r target/release/build/afl-*/out "$out"/
+          wrapProgram $out/bin/cargo-afl --set OUT_DIR "$out"/out
+        '';
+      };
 
       llvm-config-hack = let
         llvm-paths = pkgs.symlinkJoin {
@@ -60,7 +75,7 @@
           (fenix-toolchain.withComponents [
             "cargo" "clippy" "rust-src" "rustc" "rustfmt"
           ])
-          cargo-asm cargo-expand
+          cargo-asm cargo-expand cargo-afl
           fenix.rust-analyzer
           llvm clang lld
           python3
@@ -72,7 +87,7 @@
       };
 
       packages = {
-        inherit zorn;
+        inherit zorn cargo-afl;
         inherit (fenix) rust-analyzer;
       };
     });

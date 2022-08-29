@@ -1,5 +1,23 @@
 {
   "nodes": {
+    "afl": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1661777279,
+        "narHash": "sha256-Y7aI6W86F63aZxSafbwJUVgH132agnFv8nQa3ASGg2I=",
+        "ref": "refs/heads/master",
+        "rev": "b7db11193ccea2a251af76a39d29d3c99f5ccacf",
+        "revCount": 447,
+        "submodules": true,
+        "type": "git",
+        "url": "https://github.com/vkleen/afl.rs"
+      },
+      "original": {
+        "submodules": true,
+        "type": "git",
+        "url": "https://github.com/vkleen/afl.rs"
+      }
+    },
     "fenix": {
       "inputs": {
         "nixpkgs": [
@@ -30,13 +48,13 @@
       "locked": {
         "lastModified": 1659610603,
         "narHash": "sha256-LYgASYSPYo7O71WfeUOaEUzYfzuXm8c8eavJcel+pfI=",
-        "owner": "nmattia",
+        "owner": "nix-community",
         "repo": "naersk",
         "rev": "c6a45e4277fa58abd524681466d3450f896dc094",
         "type": "github"
       },
       "original": {
-        "owner": "nmattia",
+        "owner": "nix-community",
         "repo": "naersk",
         "type": "github"
       }
@@ -61,6 +79,7 @@
     },
     "root": {
       "inputs": {
+        "afl": "afl",
         "fenix": "fenix",
         "naersk": "naersk",
         "nixpkgs": "nixpkgs",

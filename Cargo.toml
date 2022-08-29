@@ -5,10 +5,12 @@ version = "0.1.0"
 edition = "2021"
 
 [workspace]
+members = ["./zorn_core", "./fuzz"]
 
 [patch.crates-io]
 x25519-dalek = { path = "nih/x25519-dalek" }
 curve25519-dalek = { path = "nih/curve25519-dalek" }
+afl = { git = "https://github.com/vkleen/afl.rs" }
 
 [dependencies]
 anyhow = "1.0.62"
