@@ -180,5 +180,31 @@ mod test {
                 &tag
             ), Err(_));
         }
+
+        #[test]
+        fn checks_key(
+                sk in any::<[u8; 32]>(),
+                sk2 in any::<[u8; 32]>(),
+                nonce in any::<[u8; 24]>(),
+                msg in vec(any::<u8>(), 0..=512),
+                ad in vec(any::<u8>(), 0..=512)) {
+            prop_assume!(sk != sk2);
+
+            let cipher = XChaCha20Blake3::new(&GenericArray::clone_from_slice(&sk));
+            let cipher2 = XChaCha20Blake3::new(&GenericArray::clone_from_slice(&sk2));
+
+            let mut encrypted_message = msg.clone();
+            let tag = cipher.encrypt_in_place_detached(
+                &Nonce::<XChaCha20Blake3>::from(nonce),
+                ad.as_slice(),
+                encrypted_message.as_mut_slice()).expect("Impossibru");
+
+            assert_matches!(cipher2.decrypt_in_place_detached(
+                &Nonce::<XChaCha20Blake3>::from(nonce),
+                ad.as_slice(),
+                encrypted_message.as_mut_slice(),
+                &tag
+            ), Err(_));
+        }
     }
 }
