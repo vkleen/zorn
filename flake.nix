@@ -74,6 +74,7 @@
         packages = [
           (fenix-toolchain.withComponents [
             "cargo" "clippy" "rust-src" "rustc" "rustfmt"
+            "llvm-tools-preview"
           ])
           cargo-asm cargo-expand cargo-afl cargo-fuzz
           fenix.rust-analyzer

@@ -1,10 +1,25 @@
 [package]
-name = "zorn-fuzz"
-authors = ["Viktor Kleen <viktor@kleen.org>"]
+name = "zorn-fuzz-libfuzzer"
 version = "0.1.0"
+authors = ["Viktor Kleen <viktor@kleen.org>"]
+publish = false
 edition = "2021"
 
+[package.metadata]
+cargo-fuzz = true
+
 [dependencies]
-zorn-core = {path = "../zorn_core" }
-url = "2.2"
-afl = "0.12"
+libfuzzer-sys = "0.4"
+
+[dependencies.zorn-core]
+path = "../zorn_core"
+
+# Prevent this from interfering with workspaces
+[workspace]
+members = ["."]
+
+[[bin]]
+name = "identity"
+path = "targets/identity.rs"
+test = false
+doc = false

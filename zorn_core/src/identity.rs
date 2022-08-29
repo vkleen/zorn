@@ -52,7 +52,11 @@ impl std::str::FromStr for ZornIdentity {
     type Err = ZornIdentityDecodeError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let (hrp, data32, variant) = bech32::decode(s)?;
+        #[cfg(fuzzing)] let (hrp, data32, variant) = bech32::decode_without_checksum(s)
+            .map(|(hrp, data32)| (hrp, data32, bech32::Variant::Bech32m))?;
+
+        #[cfg(not(fuzzing))] let (hrp, data32, variant) = bech32::decode(s)?;
+
         let data = match (hrp.as_str(), variant) {
             (ZORN_IDENTITY_HRP, bech32::Variant::Bech32m) => Vec::from_base32(&data32).map_err(ZornIdentityDecodeError::from),
             (ZORN_IDENTITY_HRP, _) => Err(ZornIdentityDecodeError::IncorrectBech32Variant),

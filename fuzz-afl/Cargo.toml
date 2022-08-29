@@ -1,0 +1,10 @@
+[package]
+name = "zorn-fuzz"
+authors = ["Viktor Kleen <viktor@kleen.org>"]
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+zorn-core = {path = "../zorn_core" }
+url = "2.2"
+afl = "0.12"
