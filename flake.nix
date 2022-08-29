@@ -75,7 +75,7 @@
           (fenix-toolchain.withComponents [
             "cargo" "clippy" "rust-src" "rustc" "rustfmt"
           ])
-          cargo-asm cargo-expand cargo-afl
+          cargo-asm cargo-expand cargo-afl cargo-fuzz
           fenix.rust-analyzer
           llvm clang lld
           python3

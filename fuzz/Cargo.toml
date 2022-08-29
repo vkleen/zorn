@@ -6,4 +6,5 @@ edition = "2021"
 
 [dependencies]
 zorn-core = {path = "../zorn_core" }
+url = "2.2"
 afl = "0.12"
