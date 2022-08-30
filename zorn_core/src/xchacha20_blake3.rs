@@ -112,7 +112,7 @@ mod test {
         fn roundtrip(
                 sk in any::<[u8; 32]>(),
                 nonce in any::<[u8; 24]>(),
-                msg in vec(any::<u8>(), 0..=512),
+                msg in vec(any::<u8>(), 1..=512),
                 ad in vec(any::<u8>(), 0..=512)) {
             let cipher = XChaCha20Blake3::new(&GenericArray::clone_from_slice(&sk));
 
@@ -121,6 +121,8 @@ mod test {
                 &Nonce::<XChaCha20Blake3>::from(nonce),
                 ad.as_slice(),
                 encrypted_message.as_mut_slice()).expect("Impossibru");
+
+            assert_ne!(msg, encrypted_message);
 
             assert_matches!(cipher.decrypt_in_place_detached(
                 &Nonce::<XChaCha20Blake3>::from(nonce),
