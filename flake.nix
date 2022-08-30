@@ -12,7 +12,7 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     afl = {
-      url = git+https://github.com/vkleen/afl.rs?submodules=1;
+      url = git+https://github.com/rust-fuzz/afl.rs?submodules=1;
       flake = false;
     };
   };

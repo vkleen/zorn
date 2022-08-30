@@ -3,19 +3,19 @@
     "afl": {
       "flake": false,
       "locked": {
-        "lastModified": 1661777279,
-        "narHash": "sha256-Y7aI6W86F63aZxSafbwJUVgH132agnFv8nQa3ASGg2I=",
+        "lastModified": 1661855600,
+        "narHash": "sha256-+5XMzA7NKSMQCANZXaDj2BEsnKiSfnkjo0k8VxOPMAc=",
         "ref": "refs/heads/master",
-        "rev": "b7db11193ccea2a251af76a39d29d3c99f5ccacf",
-        "revCount": 447,
+        "rev": "4beff539a309c90e915d3f5d28e2d8c614ca5fde",
+        "revCount": 448,
         "submodules": true,
         "type": "git",
-        "url": "https://github.com/vkleen/afl.rs"
+        "url": "https://github.com/rust-fuzz/afl.rs"
       },
       "original": {
         "submodules": true,
         "type": "git",
-        "url": "https://github.com/vkleen/afl.rs"
+        "url": "https://github.com/rust-fuzz/afl.rs"
       }
     },
     "fenix": {
